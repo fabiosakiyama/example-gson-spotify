@@ -4,27 +4,35 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import javax.naming.NamingException;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
+import sun.misc.BASE64Encoder;
 
 /**
  * Hello world!
  *
  */
-public class App {
+public class AppWithoutSpotifyJavaAPI {
 
 	private static String mostPopularSongName;
 
@@ -38,11 +46,12 @@ public class App {
 		properties.load(new FileInputStream("src/spotify.properties"));
 		String clientId = properties.getProperty("clientid");
 		String clientSecretKey = properties.getProperty("clientsecretkey");
+
 		Gson gson = new Gson();
 		HttpClient httpClient = HttpClientBuilder.create().build();
 
 		// Trying to get token
-		// getToken(httpClient);
+		getToken(clientId, clientSecretKey, httpClient, gson);
 
 		// Given the artist name, finds it's spotify id
 		String artistId = getArtistID(artistName, gson, httpClient);
@@ -78,13 +87,26 @@ public class App {
 		return trackSearchPojo.getTracks().getItems();
 	}
 
-	private static void getToken(String clientId, String clientSecretKey, HttpClient httpClient) throws UnsupportedEncodingException, IOException, ClientProtocolException {
-		// TODO ... Still not working
-		HttpPost httpPost = new HttpPost("https://accounts.spotify.com/api/token");
-		httpPost.addHeader("Authorization", "Basic " + clientId + ':' + clientSecretKey);
-		StringEntity entity = new StringEntity("{\"grant_type\":\"client_credentials\"}");
-		httpPost.setEntity(entity);
-		HttpResponse post = httpClient.execute(httpPost);
+	private static void getToken(String clientId, String clientSecretKey, HttpClient httpClient, Gson gson) throws UnsupportedEncodingException, IOException, ClientProtocolException {
+		BASE64Encoder base64Encoder = new BASE64Encoder();
+
+		String encodedClientIdKey = base64Encoder.encode((clientId + ":" + clientSecretKey).getBytes());
+		HttpPost httpPostRequest = new HttpPost("https://accounts.spotify.com/api/token");
+		httpPostRequest.setHeader("Content-Type", "application/x-www-form-urlencoded");
+		httpPostRequest.addHeader("Authorization", "Basic " + encodedClientIdKey);
+
+		List<NameValuePair> nameValuePairs = new ArrayList<>();
+		nameValuePairs.add(new BasicNameValuePair("grant_type", "client_credentials"));
+		nameValuePairs.add(new BasicNameValuePair("Content-Type", "application/x-www-form-urlencoded"));
+		
+//		JsonObject json = new JsonObject();
+//		json.addProperty("grant_type", "client_credentials");
+
+//		StringEntity stringEntity = new StringEntity(json.toString(), ContentType.APPLICATION_FORM_URLENCODED);
+//		httpPostRequest.setEntity(stringEntity);
+		httpPostRequest.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+		HttpResponse post = httpClient.execute(httpPostRequest);
 		System.out.println(post);
 	}
 

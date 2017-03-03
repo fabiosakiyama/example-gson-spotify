@@ -1,2 +1,10 @@
-com\example\gson\spotify\App.class
-com\example\gson\spotify\MusicPojo.class
+com\example\gson\spotify\ArtistPojo.class
+com\example\gson\spotify\TrackPojo.class
+com\example\gson\spotify\TrackSearchPojo.class
+com\example\gson\spotify\ArtistSearchPojo.class
+com\example\gson\spotify\AlbumsSearchPojo.class
+com\example\gson\spotify\AlbumPojo.class
+com\example\gson\spotify\TrackItemsPojo.class
+com\example\gson\spotify\AppWithSpotifyJavaAPI.class
+com\example\gson\spotify\AppWithoutSpotifyJavaAPI.class
+com\example\gson\spotify\ArtistItemsPojo.class
